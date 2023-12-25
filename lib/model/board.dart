@@ -1,22 +1,16 @@
-import 'dart:collection';
-import 'dart:math';
-
-import 'package:flutter/material.dart';
 import 'package:taskboard/model/task.dart';
 
-class Board {
+class Board<T extends Task> {
   final String name;
-  List<Task> _tasks =
-  List.generate(5, (index) => Task("Task ${Random().nextInt(100)}"))
-      .toList();
+  final List<T> _tasks;
   DateTime createDate = DateTime.now();
   late DateTime updateDate;
 
   List<Task> get tasks => _tasks;
 
-  Board(this.name);
+  Board(this.name, this._tasks);
 
-  void newTask(Task task) {
+  void newTask(T task) {
     _tasks.add(task);
     _updateDate();
   }

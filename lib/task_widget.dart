@@ -1,38 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:taskboard/animated_label.dart';
 
 import 'model/task.dart';
 
-class TaskWidget extends StatelessWidget {
-  final Task task;
-  final VoidCallback? onTap;
+typedef TaskWidgetBuilder<T extends Task> = Widget Function(T task);
 
-  const TaskWidget({Key? key, required this.task, this.onTap})
+class TaskWidget<T extends Task> extends StatelessWidget {
+  final T task;
+  final VoidCallback? onTap;
+  final TaskWidgetBuilder? builder;
+
+  const TaskWidget({Key? key, required this.task, this.onTap, this.builder})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var radius = BorderRadius.circular(4);
-    return Card(
-      elevation: 0.4,
-      child: InkWell(
-        borderRadius: radius,
-        onTap: onTap,
-        child: Container(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Wrap(
-              children: task.labels
-                  .map((e) => AnimatedLabel(show: false, label: e))
-                  .toList(),
+    return builder == null
+        ? Card(
+            elevation: 0.4,
+            child: InkWell(
+              borderRadius: radius,
+              onTap: onTap,
+              child: Container(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
+                      Text(task.title ?? "")
+                    ]),
+                padding: const EdgeInsets.all(16),
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(task.name)
-          ]),
-          padding: const EdgeInsets.all(16),
-        ),
-      ),
-      shape: RoundedRectangleBorder(borderRadius: radius),
-    );
+            shape: RoundedRectangleBorder(borderRadius: radius),
+          )
+        : builder!(task);
   }
 }

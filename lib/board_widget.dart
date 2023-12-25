@@ -1,22 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:taskboard/animated_label.dart';
 import 'package:taskboard/task_widget.dart';
 
 import 'model/board.dart';
 import 'model/task.dart';
+
+typedef OnSameListReorder = void Function(int oldIndex, int newIndex);
 
 class BoardWidget extends StatefulWidget {
   final Board board;
   final VoidCallback? addNewTaskCallback;
   final bool isDragged;
   final ValueChanged<bool>? isDragging;
+  final TaskWidgetBuilder? itemBuilder;
+  final OnSameListReorder? onSameListReorder;
+  final Widget? header;
 
   const BoardWidget(
       {Key? key,
       this.isDragging,
       required this.board,
       this.addNewTaskCallback,
-      this.isDragged = false})
+      this.isDragged = false,
+      this.itemBuilder,
+      this.onSameListReorder,
+      this.header})
       : super(key: key);
 
   @override
@@ -35,7 +42,7 @@ class _BoardWidgetState extends State<BoardWidget> {
       child: AnimatedContainer(
         padding: const EdgeInsets.all(8),
         margin: const EdgeInsets.symmetric(horizontal: 8),
-        width: 250,
+        width: 300,
         decoration: BoxDecoration(
             color: Colors.grey.withAlpha(widget.isDragged ? 100 : 50),
             borderRadius: radius),
@@ -44,16 +51,15 @@ class _BoardWidgetState extends State<BoardWidget> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 16),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              child: Text(
-                widget.board.name,
-                style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.start,
-              ),
-            ),
-            SizedBox(height: 16),
+            widget.header ??
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    widget.board.name,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                    textAlign: TextAlign.start,
+                  ),
+                ),
             Flexible(
               child: Scrollbar(
                 interactive: true,
@@ -79,8 +85,8 @@ class _BoardWidgetState extends State<BoardWidget> {
                         rootOverlay: true,
                         onDragCompleted: () {
                           widget.isDragging?.call(false);
-                          widget.board.removeTask(task);
-                          if (mounted) setState(() {});
+                          // widget.board.removeTask(task);
+                          // if (mounted) setState(() {});
                         },
                         onDragStarted: () => widget.isDragging?.call(true),
                         onDraggableCanceled: (speed, offset) =>
@@ -89,42 +95,41 @@ class _BoardWidgetState extends State<BoardWidget> {
                         data: task,
                         childWhenDragging: TaskDragPlaceholder(),
                         feedback: Container(
-                          child: TaskWidget(task: task),
+                          child: widget.itemBuilder == null
+                              ? TaskWidget(task: task)
+                              : widget.itemBuilder!(task),
                           width: 250,
                         ),
-                        child: TaskWidget(
-                          task: task,
-                          onTap: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return Card(
-                                    margin: EdgeInsets.all(32),
-                                    child: Column(children: [
-                                      Wrap(
-                                        children: task.labels
-                                            .map((e) => AnimatedLabel(
-                                                  label: e,
-                                                  show: true,
-                                                ))
-                                            .toList(),
-                                      )
-                                    ]),
-                                  );
-                                });
-                          },
-                        ),
+                        child: widget.itemBuilder == null
+                            ? TaskWidget(
+                                task: task,
+                                onTap: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return Card(
+                                          margin: EdgeInsets.all(32),
+                                          child: Column(children: []),
+                                        );
+                                      });
+                                },
+                              )
+                            : widget.itemBuilder!(task),
                       ),
                     );
                   },
                   itemCount: tasks.length,
                   shrinkWrap: true,
                   onReorder: (int oldIndex, int newIndex) {
-                    if (oldIndex < newIndex) {
-                      newIndex -= 1;
+                    if (widget.onSameListReorder != null) {
+                      widget.onSameListReorder!(oldIndex, newIndex);
+                    } else {
+                      if (oldIndex < newIndex) {
+                        newIndex -= 1;
+                      }
+                      final item = tasks.removeAt(oldIndex);
+                      widget.board.tasks.insert(newIndex, item);
                     }
-                    final item = tasks.removeAt(oldIndex);
-                    widget.board.tasks.insert(newIndex, item);
                   },
                 ),
               ),

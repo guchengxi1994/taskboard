@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:taskboard/model/board.dart';
@@ -16,11 +14,30 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   var boards = <Board>[
-    Board("Backlog"),
-    Board("Sprint Backlog"),
-    Board("Working on"),
-    Board("Bugs"),
-    Board("Testing"),
+    Board("Backlog", [
+      Task()
+        ..id = 1
+        ..title = "a",
+      Task()
+        ..id = 2
+        ..title = "b"
+    ]),
+    Board("Sprint Backlog", [
+      Task()
+        ..id = 3
+        ..title = "2a",
+      Task()
+        ..id = 4
+        ..title = "2b"
+    ]),
+    Board("Working on", [
+      Task()
+        ..id = 5
+        ..title = "7a",
+      Task()
+        ..id = 6
+        ..title = "7b"
+    ]),
   ];
   GlobalKey<ReorderableListState> _listKey = GlobalKey<ReorderableListState>();
   ScrollController _controller = ScrollController();
@@ -36,9 +53,7 @@ class _MainPageState extends State<MainPage> {
               builder: (context) {
                 return SimpleDialog(
                   title: Text('Add new board by type the title'),
-                  children: [
-                    TextField()
-                  ],
+                  children: [TextField()],
                 );
               });
         },
@@ -85,11 +100,7 @@ class _MainPageState extends State<MainPage> {
                             this._isDragging = isDragging;
                           },
                           board: board,
-                          addNewTaskCallback: () {
-                            board
-                                .newTask(Task("Task ${Random().nextInt(100)}"));
-                            setState(() {});
-                          },
+                          addNewTaskCallback: () {},
                         );
                       },
                     ),
