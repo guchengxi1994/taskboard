@@ -76,7 +76,30 @@ class _BoardWidgetState extends State<BoardWidget> {
                   },
                   itemBuilder: (context, index) {
                     var task = widget.board.tasks[index];
+                    if (task.title == "" || task.title == null) {
+                      return widget.itemBuilder == null
+                          ? TaskWidget(
+                              key: UniqueKey(),
+                              task: task,
+                              onTap: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return Card(
+                                        margin: EdgeInsets.all(32),
+                                        child: Column(children: []),
+                                      );
+                                    });
+                              },
+                            )
+                          : Container(
+                              key: UniqueKey(),
+                              child: widget.itemBuilder!(task),
+                            );
+                    }
+
                     return ReorderableDragStartListener(
+                      // enabled: task.title != "" && task.title != null,
                       index: index,
                       key: ValueKey(task.id),
                       child: Draggable<Task>(
