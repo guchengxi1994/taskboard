@@ -158,14 +158,15 @@ class _BoardWidgetState extends State<BoardWidget> {
               ),
             ),
             SizedBox(height: 16),
-            Container(
-              width: 250,
-              child: TextButton.icon(
-                onPressed: widget.addNewTaskCallback,
-                icon: Icon(Icons.add),
-                label: Text("Add a Task"),
-              ),
-            )
+            if (widget.addNewTaskCallback != null)
+              Container(
+                width: 250,
+                child: TextButton.icon(
+                  onPressed: widget.addNewTaskCallback,
+                  icon: Icon(Icons.add),
+                  label: Text("Add a Task"),
+                ),
+              )
           ],
         ),
       ),
